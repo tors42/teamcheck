@@ -18,6 +18,16 @@ https://github.com/tors42/teamcheck/releases/download/v0.0.1/teamcheck-0.0.1-mac
 
 https://github.com/tors42/teamcheck/releases/download/v0.0.1/teamcheck-0.0.1-windows.zip
 
+# Screenshots
+
+Use search field to find a team, and select it in drop-down box,
+
+![search](https://user-images.githubusercontent.com/4084220/131161893-a0b8a407-2043-4fb3-9012-50fb6cbf1871.png)
+
+And click `Launch` to see team members "flying" in...
+
+![launch](https://user-images.githubusercontent.com/4084220/131161888-15768f3d-f651-4b4f-90c6-7d65b85db4aa.png)
+
 
 # Build
 
