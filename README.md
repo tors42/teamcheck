@@ -4,19 +4,9 @@ A Lichess Team Management application
 
 # Download
 
-Download the application for your Operating System, unpack and run (`teamcheck-0.0.1/bin/teamcheck`)
+Download the application for your Operating System, unpack and run (`teamcheck-x.y.z/bin/teamcheck`)
 
-## Linux (x64)
-
-https://github.com/tors42/teamcheck/releases/download/v0.0.1/teamcheck-0.0.1-linux.zip
-
-## MacOS (x64)
-
-https://github.com/tors42/teamcheck/releases/download/v0.0.1/teamcheck-0.0.1-macos.zip
-
-## Windows (x64)
-
-https://github.com/tors42/teamcheck/releases/download/v0.0.1/teamcheck-0.0.1-windows.zip
+https://github.com/tors42/teamcheck/releases/
 
 # Screenshots
 
@@ -38,10 +28,9 @@ make sure to use at least Java 17. A JDK archive can be downloaded and unpacked 
     $ export PATH=$JAVA_HOME/bin:$PATH
 
     $ java -version
-    openjdk version "17" 2021-09-14
-    OpenJDK Runtime Environment (build 17+35-2724)
-    OpenJDK 64-Bit Server VM (build 17+35-2724, mixed mode, sharing)
-
+    openjdk version "17.0.1" 2021-10-19
+    OpenJDK Runtime Environment (build 17.0.1+12-39)
+    OpenJDK 64-Bit Server VM (build 17.0.1+12-39, mixed mode, sharing)
 
     $ java build/Build.java
 
