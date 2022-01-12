@@ -191,8 +191,11 @@ public class TeamChooser extends JFrame {
                 if (combo.getSelectedItem() instanceof TeamNameAndId team) {
                     prefs.put("selectedTeamName", team.name());
                     prefs.put("selectedTeamId", team.id());
-                    try { prefs.flush(); } catch (Exception e) {}
+                } else {
+                    prefs.remove("selectedTeamName");
+                    prefs.remove("selectedTeamId");
                 }
+                try { prefs.flush(); } catch (Exception e) {}
             }
         });
         searchField.setMaximumSize(combo.getPreferredSize());
@@ -259,8 +262,9 @@ public class TeamChooser extends JFrame {
                 if (text.isEmpty()) {
                     boolean enabled = ! leaderTeams.isEmpty();
                     launchButton.setEnabled(false);
-                    combo.setEnabled(false);
                     combo.removeAllItems();
+                    combo.actionPerformed(null);
+                    combo.setEnabled(false);
                     leaderTeams.stream().forEach(combo::addItem);
                     launchButton.setEnabled(enabled);
                     combo.setEnabled(enabled);
