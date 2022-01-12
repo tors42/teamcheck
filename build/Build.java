@@ -117,17 +117,10 @@ public class Build {
             record JdkJmods(String url, String jmods) {}
 
             //https://jdk.java.net/17
-            //
-            //linux/x64   https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_linux-x64_bin.tar.gz
-            //macos/x64   https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_macos-x64_bin.tar.gz
-            //windows/x64 https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_windows-x64_bin.zip
-            //
-            //(linux/aarch64 https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_linux-aarch64_bin.tar.gz)
-            //(macos/aarch64 https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_macos-aarch64_bin.tar.gz)
-
-            var linux   = new JdkJmods("https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_linux-x64_bin.tar.gz", "linuxX64Jmods");
-            var macos   = new JdkJmods("https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_macos-x64_bin.tar.gz", "macosX64Jmods");
-            var windows = new JdkJmods("https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_windows-x64_bin.zip", "windowsX64Jmods");
+            var javaVersion = "17.0.1";
+            var linux   = new JdkJmods("https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_linux-x64_bin.tar.gz" , "linuxX64Jmods" + javaVersion);
+            var macos   = new JdkJmods("https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_macos-x64_bin.tar.gz", "macosX64Jmods" + javaVersion);
+            var windows = new JdkJmods("https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_windows-x64_bin.zip", "windowsX64Jmods" + javaVersion);
 
             List<Callable<Void>> tasks = Stream.of(linux, macos, windows)
                 .map(jdk -> (Callable<Void>) () -> {
@@ -147,31 +140,31 @@ public class Build {
                                 ProcessBuilder pb = new ProcessBuilder(
                                         "unzip",
                                         "-j",
-                                        "cache/openjdk-17_windows-x64_bin.zip",
-                                        "jdk-17/jmods/*",
+                                        archive.toString(),
+                                        "jdk-"+javaVersion+"/jmods/*",
                                         "-d",
-                                        "cache/windowsX64Jmods");
+                                        "cache/" + jdk.jmods());
                                 pb.start().waitFor();
                             } else if (jdk.jmods().contains("linux")) {
                                 ProcessBuilder pb = new ProcessBuilder(
                                         "tar",
                                         "xzf",
-                                        "cache/openjdk-17_linux-x64_bin.tar.gz",
+                                        archive.toString(),
                                         "-C",
                                         "cache",
-                                        "jdk-17/jmods/",
-                                        "--transform=s/jdk-17.jmods/linuxX64Jmods/g"
+                                        "jdk-"+javaVersion+"/jmods/",
+                                        "--transform=s/jdk-"+javaVersion+".jmods/"+jdk.jmods()+"/g"
                                         );
                                 pb.start().waitFor();
                             } else if (jdk.jmods().contains("macos")) {
                                 ProcessBuilder pb = new ProcessBuilder(
                                         "tar",
                                         "xzf",
-                                        "cache/openjdk-17_macos-x64_bin.tar.gz",
+                                        archive.toString(),
                                         "-C",
                                         "cache",
-                                        "./jdk-17.jdk/Contents/Home/jmods/",
-                                        "--transform=s/..jdk-17.jdk.Contents.Home.jmods/macosX64Jmods/g");
+                                        "./jdk-"+javaVersion+".jdk/Contents/Home/jmods/",
+                                        "--transform=s/..jdk-"+javaVersion+".jdk.Contents.Home.jmods/"+jdk.jmods()+"/g");
                                 pb.start().waitFor();
                             }
 
