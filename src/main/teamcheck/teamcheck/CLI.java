@@ -9,18 +9,17 @@ class CLI {
 
         var prefs = Main.prefs();
 
-        try (var client = Client.load(prefs)) {
-            client.store(prefs);
-            try { prefs.flush();} catch (Exception e) { }
+        var client = Client.load(prefs);
+        client.store(prefs);
+        try { prefs.flush();} catch (Exception e) { }
 
-            CheckUtil.of(
-                    args[0],
-                    t -> System.out.format("Team: %s%nMembers: %s%n", t.name(), t.nbMembers()),
-                    u -> System.out.format("%-16s - %s%n", u.username(), u.url()),
-                    u -> u.tosViolation()
-                    )
-                .process(client);
-        }
+        CheckUtil.of(
+                args[0],
+                t -> System.out.format("Team: %s%nMembers: %s%n", t.name(), t.nbMembers()),
+                u -> System.out.format("%-16s - %s%n", u.username(), u.url()),
+                u -> u.tosViolation()
+                )
+            .process(client);
     }
 
     static void usage(String... args) {

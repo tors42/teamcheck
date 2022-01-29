@@ -93,7 +93,6 @@ public class TeamChooser extends JFrame {
                 var mate = teamCheck.andMate(clientAuth, () -> {
                     // onExpiredToken
                     clearAuth();
-                    clientAuth.close();
                     client = Client.load(prefs);
                     boids.deweaponize();
 
@@ -154,7 +153,6 @@ public class TeamChooser extends JFrame {
             if (client instanceof ClientAuth clientAuth) {
                 clearAuth();
                 clientAuth.account().revokeToken();
-                clientAuth.close();
 
                 // Reload client with non-auth info
                 client = Client.load(prefs);
