@@ -273,10 +273,10 @@ public class TeamChooser extends JFrame {
                     executor.submit( () -> {
                         client.teams().search(text).stream()
                             .map(t -> new TeamNameAndId(t.name(), t.id()))
+                            .limit(30)
                             .filter(t ->
                                     t.name().toLowerCase().contains(text.toLowerCase()) ||
                                     t.id().toLowerCase().contains(text.toLowerCase()))
-                            .limit(30)
                             .forEach(t -> {
                                 var item = new TeamNameAndId(t.name(), t.id());
                                 SwingUtilities.invokeLater(() -> {
