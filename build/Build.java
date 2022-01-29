@@ -108,7 +108,7 @@ public class Build {
                     "--compress", "1",
                     "--strip-debug",
                     "--module-path", String.join(File.pathSeparator, nativeJmods.toString(), moduleOut.toString(), lib.toString()),
-                    "--add-modules", "teamcheck",
+                    "--add-modules", module,
                     "--launcher", module + "=" + module,
                     "--output", out.resolve("runtime").toString()
                );
