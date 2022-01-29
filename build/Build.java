@@ -3,6 +3,7 @@ package build;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.Runtime.Version;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -13,6 +14,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.spi.ToolProvider;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -112,118 +116,150 @@ public class Build {
 
 
         if (cross) {
-            var executor = Executors.newCachedThreadPool();
 
-            record JdkJmods(String url, String jmods) {}
+            record Jdk(String os, String arch, String ext) {
+                String osAndArch() { return String.join("-", os, arch); }
+            }
+            record VersionedJdk(Jdk jdk, Version version) {
+                String toVersionString() { return version.version().stream().map(String::valueOf).collect(Collectors.joining(".")); }
+                String toBuildString() { return version.build().map(String::valueOf).orElseThrow(); }
+            }
+            record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
+            record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            //https://jdk.java.net/17
-            var javaVersion = "17.0.1";
-            var linux   = new JdkJmods("https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_linux-x64_bin.tar.gz" , "linuxX64Jmods" + javaVersion);
-            var macos   = new JdkJmods("https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_macos-x64_bin.tar.gz", "macosX64Jmods" + javaVersion);
-            var windows = new JdkJmods("https://download.java.net/java/GA/jdk17.0.1/2a2082e5a09d4267845be086888add4f/12/GPL/openjdk-17.0.1_windows-x64_bin.zip", "windowsX64Jmods" + javaVersion);
+            Version javaVersion = Version.parse("17.0.2+8");
 
-            List<Callable<Void>> tasks = Stream.of(linux, macos, windows)
+            var jdks = List.of(
+                    new Jdk("linux", "x64", "tar.gz"),
+                    new Jdk("macos", "x64", "tar.gz"),
+                    new Jdk("windows", "x64", "zip")
+                    );
+
+            Function<VersionedJdk, URI> toOpenJdkUri = vjdk -> {
+                //https://jdk.java.net/17
+                String javaVersionString = vjdk.toVersionString();
+                String buildString       = vjdk.toBuildString();
+
+                String id = "dfd4a8d0985749f896bed50d7138ee7f";
+                String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
+                String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
+
+                var jdk = vjdk.jdk();
+                URI uri = URI.create(baseUrl + filenameTemplate.formatted(jdk.os(), jdk.arch(), jdk.ext()));
+                return uri;
+            };
+
+            BiFunction<DownloadableVersionedJdk, Path, Path> toJmodsPath = (jdk, cacheDir) -> cacheDir.resolve("jmods-" + jdk.versionedJdk().jdk().osAndArch() + "-" + jdk.versionedJdk().toVersionString());
+
+            BiConsumer<Path, JmodsPath> unpack = (archive, target) -> {
+
+                String javaVersionString = target.downloadableVersionedJdk().versionedJdk().toVersionString();
+                String cacheDir = target.jmods().getParent().toString();
+
+                ProcessBuilder pb = switch(target.downloadableVersionedJdk().versionedJdk().jdk().os()) {
+                    case "windows" -> new ProcessBuilder(
+                            "unzip",
+                            "-j",
+                            archive.toString(),
+                            "jdk-"+javaVersionString+"/jmods/*",
+                            "-d",
+                            target.jmods().toString());
+
+                    case "linux" -> new ProcessBuilder(
+                            "tar",
+                            "xzf",
+                            archive.toString(),
+                            "-C",
+                            cacheDir,
+                            "jdk-"+javaVersionString+"/jmods/",
+                            "--transform=s/jdk-"+javaVersionString+".jmods/"+target.jmods().getFileName()+"/g");
+
+                    case "macos" -> new ProcessBuilder(
+                            "tar",
+                            "xzf",
+                            archive.toString(),
+                            "-C",
+                            cacheDir,
+                            "./jdk-"+javaVersionString+".jdk/Contents/Home/jmods/",
+                            "--transform=s/..jdk-"+javaVersionString+".jdk.Contents.Home.jmods/"+target.jmods().getFileName()+"/g");
+
+                   default -> throw new IllegalArgumentException(target.downloadableVersionedJdk().versionedJdk().jdk().os());
+                };
+
+                // :
+
+                try {
+                    int exitValue = pb.start().waitFor();
+                    if (exitValue != 0) {
+                        System.out.println("Failure executing " + cacheDir + " - " + pb.toString());
+                    }
+                } catch(Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+
+
+            var jmodsPaths = jdks.stream()
+                .map(jdk -> new VersionedJdk(jdk, javaVersion))
+                .map(jdk -> new DownloadableVersionedJdk(jdk, toOpenJdkUri.apply(jdk)))
+                .map(jdk -> new JmodsPath(jdk, toJmodsPath.apply(jdk, cache)))
+                .toList();
+
+            var downloadAndUnpackTasks = jmodsPaths.stream()
                 .map(jdk -> (Callable<Void>) () -> {
+                    Path jmods = jdk.jmods();
+                    if (! jmods.toFile().exists()) {
+                        Path archive = Files.createTempFile(jdk.downloadableVersionedJdk().versionedJdk().jdk().osAndArch()+"-", "");
+                        archive.toFile().deleteOnExit();
 
-                        Path jmods = cache.resolve(jdk.jmods());
-                        Path archive = cache.resolve(jdk.url().substring(jdk.url().lastIndexOf('/')+1));
-
-                        if (! jmods.toFile().exists()) {
-                            System.out.println("Downloading " + jdk.url());
-                            try (var source = URI.create(jdk.url()).toURL().openStream();
-                                 var target = Files.newOutputStream(archive))
-                            {
-                                source.transferTo(target);
-                            }
-
-                            if (jdk.jmods().contains("windows")) {
-                                ProcessBuilder pb = new ProcessBuilder(
-                                        "unzip",
-                                        "-j",
-                                        archive.toString(),
-                                        "jdk-"+javaVersion+"/jmods/*",
-                                        "-d",
-                                        "cache/" + jdk.jmods());
-                                pb.start().waitFor();
-                            } else if (jdk.jmods().contains("linux")) {
-                                ProcessBuilder pb = new ProcessBuilder(
-                                        "tar",
-                                        "xzf",
-                                        archive.toString(),
-                                        "-C",
-                                        "cache",
-                                        "jdk-"+javaVersion+"/jmods/",
-                                        "--transform=s/jdk-"+javaVersion+".jmods/"+jdk.jmods()+"/g"
-                                        );
-                                pb.start().waitFor();
-                            } else if (jdk.jmods().contains("macos")) {
-                                ProcessBuilder pb = new ProcessBuilder(
-                                        "tar",
-                                        "xzf",
-                                        archive.toString(),
-                                        "-C",
-                                        "cache",
-                                        "./jdk-"+javaVersion+".jdk/Contents/Home/jmods/",
-                                        "--transform=s/..jdk-"+javaVersion+".jdk.Contents.Home.jmods/"+jdk.jmods()+"/g");
-                                pb.start().waitFor();
-                            }
-
-                        } else {
-                            System.out.println("Using " + jmods);
+                        System.out.println("Downloading " + jdk.downloadableVersionedJdk());
+                        try (var source = jdk.downloadableVersionedJdk().uri().toURL().openStream();
+                             var target = Files.newOutputStream(archive))
+                        {
+                            source.transferTo(target);
                         }
 
-                        return null;
+                        unpack.accept(archive, jdk);
+                    } else {
+                        System.out.println("Using " + jmods);
+                    }
+                    return null;
+                }
+                )
+                .toList();
 
-                    }).toList();
-
-            executor.invokeAll(tasks);
+            var executor = Executors.newFixedThreadPool(jdks.size());
+            executor.invokeAll(downloadAndUnpackTasks);
             executor.shutdown();
 
 
-            run(jlink,
-                    "--compress", "1",
-                    "--module-path", String.join(File.pathSeparator, "cache/windowsX64Jmods", moduleOut.toString(), lib.toString()),
-                    "--add-modules", "teamcheck",
-                    "--launcher", module + "=" + module,
-                    "--output", out.resolve("windows").resolve(prefix).toString()
-               );
+            jmodsPaths.stream()
+                .forEach(jdk -> {
+                    run(jlink,
+                            "--compress", "1",
+                            "--module-path", String.join(File.pathSeparator, jdk.jmods().toString(), moduleOut.toString(), lib.toString()),
+                            "--add-modules", module,
+                            "--launcher", module + "=" + module,
+                            "--output", out.resolve(jdk.downloadableVersionedJdk().versionedJdk().jdk().osAndArch()).resolve(prefix).toString()
+                       );
+                });
 
-            run(jlink,
-                    "--compress", "1",
-                    "--module-path", String.join(File.pathSeparator, "cache/linuxX64Jmods", moduleOut.toString(), lib.toString()),
-                    "--add-modules", "teamcheck",
-                    "--launcher", module + "=" + module,
-                    "--output", out.resolve("linux").resolve(prefix).toString()
-               );
+            jmodsPaths.stream()
+                .forEach(jdk -> {
+                    var pb = new ProcessBuilder(
+                            "zip",
+                            "-r",
+                            "../" + prefix + "-" + jdk.downloadableVersionedJdk().versionedJdk().jdk().osAndArch() + ".zip",
+                            "."
+                            ).directory(new File("out/" + jdk.downloadableVersionedJdk().versionedJdk().jdk().osAndArch()));
 
-            run(jlink,
-                    "--compress", "1",
-                    "--module-path", String.join(File.pathSeparator, "cache/macosX64Jmods", moduleOut.toString(), lib.toString()),
-                    "--add-modules", "teamcheck",
-                    "--launcher", module + "=" + module,
-                    "--output", out.resolve("macos").resolve(prefix).toString()
-               );
+                    try {
+                        pb.start().waitFor();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
-            new ProcessBuilder(
-                    "zip",
-                    "-r",
-                    "../" + prefix + "-windows.zip",
-                    "."
-                    ).directory(new File("out/windows")).start().waitFor();
-
-            new ProcessBuilder(
-                    "zip",
-                    "-r",
-                    "../" + prefix + "-linux.zip",
-                    "."
-                    ).directory(new File("out/linux")).start().waitFor();
-
-            new ProcessBuilder(
-                    "zip",
-                    "-r",
-                    "../" + prefix + "-macos.zip",
-                    "."
-                    ).directory(new File("out/macos")).start().waitFor();
         }
     }
 
