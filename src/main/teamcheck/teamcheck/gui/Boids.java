@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 import chariot.model.User;
+import teamcheck.Vec;
 import teamcheck.CheckUtil.Mate;
 
 class Boids extends JComponent {
@@ -26,7 +26,14 @@ class Boids extends JComponent {
     boolean running = false;
 
     static Random random = new Random();
-    record Boid(Vec position, Vec velocity, boolean curious, Color color, int size, String name) {}
+    record Boid(Vec position, Vec velocity, boolean curious, Color color, int size, String name) {
+        Boid withPos(Vec newPos) {
+            return new Boid(newPos, velocity, curious, color, size, name);
+        }
+        Boid withVel(Vec newVel) {
+            return new Boid(position, newVel, curious, color, size, name);
+        }
+     }
 
     List<Boid> boids =    Collections.synchronizedList(new ArrayList<>());
     List<Boid> toAdd =    Collections.synchronizedList(new ArrayList<>());
@@ -45,8 +52,8 @@ class Boids extends JComponent {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Predicate<Boid> clickHitBoid = b ->
-                    Math.sqrt(Math.pow(b.position().vec()[0]               - e.getX(), 2) +
-                              Math.pow(getHeight() - b.position().vec()[1] - e.getY(), 2)) < b.size();
+                    Math.sqrt(Math.pow(b.position().x()               - e.getX(), 2) +
+                              Math.pow(getHeight() - b.position().y() - e.getY(), 2)) < b.size();
 
                 var target = boids.stream()
                     .filter(clickHitBoid)
@@ -117,8 +124,8 @@ class Boids extends JComponent {
     }
 
     void drawBoid(Boid b, Graphics g) {
-        int x = (int) b.position().vec()[0] - b.size()/2;
-        int y = getHeight() - (int) b.position().vec()[1] - b.size()/2;
+        int x = (int) b.position().x() - b.size()/2;
+        int y = getHeight() - (int) b.position().y() - b.size()/2;
 
         g.setColor(b.color());
         g.fillOval(x, y, b.size(), b.size());
@@ -128,41 +135,34 @@ class Boids extends JComponent {
     }
 
     void step() {
+        List<Boid> newBoids = Collections.synchronizedList(new ArrayList<>(boids.size()));
 
-        record BoidAction(Boid boid, Vec action) {};
+        boids.stream()
+            .parallel()
+            .forEach(boid -> {
+                var newVel = boid.velocity();
+                var newPos = boid.position();
 
-        var boidActions = boids.stream()
-            .filter(Objects::nonNull)
-            .map(boid -> {
                 var flee = flee(boid);
-                if (flee.vec()[0] != 0 || flee.vec()[1] != 0) {
-                    return new BoidAction(boid, flee);
+                if (flee.x() != 0 || flee.y() != 0) {
+                    newVel = flee;
                 } else {
-                    return new BoidAction(boid, Stream.of(
-                                // Boids move in same direction
-                                alignment(boid),
-
-                                // Boids move to the centre of mass
-                                cohesion(boid),
-
-                                // Boids keep a distance from eachother
-                                separation(boid),
-
-                                // Boids don't stray far outside boundary
-                                boundary(boid)
-                                ).reduce(Vec.of(0,0), Vec::add));
+                    newVel = newVel
+                        .add(alignment(boid))
+                        .add(cohesion(boid))
+                        .add(separation(boid))
+                        .add(boundary(boid));
                 }
-            }
-        ).toList();
 
-        boidActions.stream().forEach(boidAction -> {
-            var adjusted = boidAction.boid.velocity().add(boidAction.action);
+                if (newVel.len() > 5) newVel = newVel.normalize().mul(4);
+                if (newVel.len() < 3) newVel = newVel.normalize().mul(3);
 
-            if (adjusted.len() > 5) adjusted.normalize().mul(4);
-            if (adjusted.len() < 3) adjusted.normalize().mul(3);
+                newPos = newPos.add(newVel);
 
-            boidAction.boid.position().add(boidAction.boid.velocity());
-        });
+                newBoids.add(boid.withPos(newPos).withVel(newVel));
+            });
+
+        boids = newBoids;
     }
 
     Vec alignment(Boid boid) {
@@ -219,8 +219,8 @@ class Boids extends JComponent {
     }
 
     Vec boundary(Boid boid) {
-        var x = boid.position().vec()[0];
-        var y = boid.position().vec()[1];
+        var x = boid.position().x();
+        var y = boid.position().y();
         var inset      = 50;
         var adjustment = 5;
         int height = getHeight();
@@ -229,15 +229,15 @@ class Boids extends JComponent {
         var v = Vec.of(0,0);
 
         if (x < inset) {
-            v.vec()[0] = (inset - x) / adjustment;
+            v = v.withX((inset - x) / adjustment);
         } else if (x > width-inset) {
-            v.vec()[0] = - (x - (width-inset)) / adjustment;
+            v = v.withX(- (x - (width-inset)) / adjustment);
         }
 
         if (y < inset) {
-            v.vec()[1] = (inset - y) / adjustment;
+            v = v.withY((inset - y) / adjustment);
         } else if(y > height-inset) {
-            v.vec()[1] = -(y - (height-inset)) / adjustment;
+            v = v.withY(-(y - (height-inset)) / adjustment);
         }
 
         return v;
