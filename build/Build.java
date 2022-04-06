@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 public class Build {
 
-    private static final String chariot_version = "0.0.21";
+    private static final String chariot_version = "0.0.30";
 
     private static final String chariotUrl = "https://repo1.maven.org/maven2/io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
 
@@ -105,7 +105,9 @@ public class Build {
                 .orElseThrow();
 
             run(jlink,
-                    "--compress", "1",
+                    "--compress", "2",
+                    "--no-man-pages",
+                    "--no-header-files",
                     "--strip-debug",
                     "--module-path", String.join(File.pathSeparator, nativeJmods.toString(), moduleOut.toString(), lib.toString()),
                     "--add-modules", module,
@@ -127,7 +129,7 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            Version javaVersion = Version.parse("17.0.2+8");
+            Version javaVersion = Version.parse("18+36");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -136,11 +138,11 @@ public class Build {
                     );
 
             Function<VersionedJdk, URI> toOpenJdkUri = vjdk -> {
-                //https://jdk.java.net/17
+                //https://jdk.java.net/18
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "dfd4a8d0985749f896bed50d7138ee7f";
+                String id = "43f95e8614114aeaa8e8a5fcf20a682d";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
@@ -236,7 +238,9 @@ public class Build {
             jmodsPaths.stream()
                 .forEach(jdk -> {
                     run(jlink,
-                            "--compress", "1",
+                            "--compress", "2",
+                            "--no-man-pages",
+                            "--no-header-files",
                             "--module-path", String.join(File.pathSeparator, jdk.jmods().toString(), moduleOut.toString(), lib.toString()),
                             "--add-modules", module,
                             "--launcher", module + "=" + module,
