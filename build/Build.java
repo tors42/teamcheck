@@ -129,7 +129,7 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            Version javaVersion = Version.parse("18+36");
+            Version javaVersion = Version.parse("18.0.1+10");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -142,7 +142,7 @@ public class Build {
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "43f95e8614114aeaa8e8a5fcf20a682d";
+                String id = "3f48cabb83014f9fab465e280ccf630b";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
