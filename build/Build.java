@@ -1,30 +1,19 @@
 package build;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.Runtime.Version;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.net.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
 import java.util.spi.ToolProvider;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 
 public class Build {
 
-    private static final String chariot_version = "0.0.31";
+    private static final String chariot_version = "0.0.46";
 
     private static final String chariotUrl = "https://repo1.maven.org/maven2/io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
 
@@ -129,20 +118,19 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            Version javaVersion = Version.parse("18.0.1+10");
+            Version javaVersion = Version.parse("18.0.2+9");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
                     new Jdk("macos", "x64", "tar.gz"),
                     new Jdk("windows", "x64", "zip")
                     );
-
             Function<VersionedJdk, URI> toOpenJdkUri = vjdk -> {
                 //https://jdk.java.net/18
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "3f48cabb83014f9fab465e280ccf630b";
+                String id = "f6ad4b4450fd4d298113270ec84f30ee";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 

@@ -2,6 +2,8 @@ package teamcheck;
 
 import chariot.Client;
 import chariot.ClientAuth;
+import chariot.model.Ack;
+import chariot.model.Fail;
 import chariot.model.Team;
 import chariot.model.User;
 
@@ -54,10 +56,9 @@ public record CheckUtil(
             if (res.isPresent()) {
                 return res.get().ok();
             } else {
-                var error = res.error();
-                if (error.contains("No such token")) {
+                if (res instanceof Fail<Ack> f && f.info().toString().contains("No such token"))
                     try { onTokenBeenRevoked.run(); } catch (Exception ex) {}
-                }
+
                 return false;
             }
         };
