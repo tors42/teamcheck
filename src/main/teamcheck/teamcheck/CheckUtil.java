@@ -56,7 +56,7 @@ public record CheckUtil(
             if (res.isPresent()) {
                 return res.get().ok();
             } else {
-                if (res instanceof Fail<Ack> f && f.info().toString().contains("No such token"))
+                if (res instanceof Fail<Ack> f && f.message().contains("No such token"))
                     try { onTokenBeenRevoked.run(); } catch (Exception ex) {}
 
                 return false;
