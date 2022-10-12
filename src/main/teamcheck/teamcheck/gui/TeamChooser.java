@@ -517,7 +517,7 @@ public class TeamChooser extends JFrame {
         text.setEnabled(false);
         text.setDisabledTextColor(Color.BLACK);
 
-        var uriAndToken = client.account().oauthPKCE(Client.Scope.team_write, Client.Scope.team_read);
+        var uriAndToken = client.account().oauthPKCE(Client.Scope.team_lead, Client.Scope.team_read);
         var uri = uriAndToken.url();
 
         executor.submit(() -> {

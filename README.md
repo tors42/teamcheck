@@ -22,15 +22,15 @@ And click `Launch` to see team members "flying" in...
 # Build
 
 If you want to build the application yourself,
-make sure to use at least Java 17. A JDK archive can be downloaded and unpacked from https://jdk.java.net/17/
+make sure to use at least Java 19. A JDK archive can be downloaded and unpacked from https://jdk.java.net/19/
 
     $ export JAVA_HOME=<path to jdk>
     $ export PATH=$JAVA_HOME/bin:$PATH
 
     $ java -version
-    openjdk version "17.0.1" 2021-10-19
-    OpenJDK Runtime Environment (build 17.0.1+12-39)
-    OpenJDK 64-Bit Server VM (build 17.0.1+12-39, mixed mode, sharing)
+    openjdk version "19" 2022-09-20
+    OpenJDK Runtime Environment (build 19+36-2238)
+    OpenJDK 64-Bit Server VM (build 19+36-2238, mixed mode, sharing)
 
     $ java build/Build.java
 

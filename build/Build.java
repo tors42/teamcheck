@@ -13,7 +13,7 @@ import java.util.stream.*;
 
 public class Build {
 
-    private static final String chariot_version = "0.0.47";
+    private static final String chariot_version = "0.0.54";
 
     private static final String chariotUrl = "https://repo1.maven.org/maven2/io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
 
@@ -118,7 +118,8 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            Version javaVersion = Version.parse("18.0.2+9");
+            //https://download.java.net/java/GA/jdk19//36/GPL/openjdk-19_linux-x64_bin.tar.gz
+            Version javaVersion = Version.parse("19+36");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -130,7 +131,7 @@ public class Build {
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "f6ad4b4450fd4d298113270ec84f30ee";
+                String id = "877d6127e982470ba2a7faa31cc93d04";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
