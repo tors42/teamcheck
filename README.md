@@ -28,9 +28,9 @@ make sure to use at least Java 19. A JDK archive can be downloaded and unpacked 
     $ export PATH=$JAVA_HOME/bin:$PATH
 
     $ java -version
-    openjdk version "19" 2022-09-20
-    OpenJDK Runtime Environment (build 19+36-2238)
-    OpenJDK 64-Bit Server VM (build 19+36-2238, mixed mode, sharing)
+    openjdk version "19.0.1" 2022-10-18
+    OpenJDK Runtime Environment (build 19.0.1+10-21)
+    OpenJDK 64-Bit Server VM (build 19.0.1+10-21, mixed mode, sharing)
 
     $ java build/Build.java
 
