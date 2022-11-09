@@ -4,6 +4,8 @@ import java.io.*;
 import java.lang.Runtime.Version;
 import java.net.*;
 import java.nio.file.*;
+import java.time.*;
+import java.time.format.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
@@ -23,6 +25,8 @@ public class Build {
         var cross = Arrays.stream(args).anyMatch("cross"::equals);
         var module = props.getOrDefault("module", "teamcheck");
         var version = props.getOrDefault("version", "0.0.1-SNAPSHOT");
+        var timestamp = props.getOrDefault("timestamp", ZonedDateTime.now()
+            .withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
         var javac = ToolProvider.findFirst("javac").orElseThrow(() -> new RuntimeException("Missing javac tool"));
         var jar = ToolProvider.findFirst("jar").orElseThrow(() -> new RuntimeException("Missing jar tool"));
@@ -70,7 +74,6 @@ public class Build {
                 """.formatted(module, version, Runtime.version()));
 
         run(javac,
-                "-encoding", "UTF-8",
                 "--module-source-path", moduleSrc.toString(),
                 "--module", module,
                 "--module-path", lib.toString(),
@@ -79,6 +82,7 @@ public class Build {
 
         run(jar,
                 "--create",
+                "--date", timestamp,
                 "--manifest", manifest.toString(),
                 "--module-version", version,
                 "--main-class", module + ".Main",
