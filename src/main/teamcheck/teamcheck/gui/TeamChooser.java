@@ -1,13 +1,8 @@
 package teamcheck.gui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
@@ -152,7 +147,7 @@ public class TeamChooser extends JFrame {
 
             if (client instanceof ClientAuth clientAuth) {
                 clearAuth();
-                clientAuth.account().revokeToken();
+                clientAuth.revokeToken();
 
                 // Reload client with non-auth info
                 client = Client.load(prefs);
@@ -517,38 +512,48 @@ public class TeamChooser extends JFrame {
         text.setEnabled(false);
         text.setDisabledTextColor(Color.BLACK);
 
-        var uriAndToken = client.account().oauthPKCE(Client.Scope.team_lead, Client.Scope.team_read);
-        var uri = uriAndToken.url();
+
+        var oauthButton = new JButton("Open link in System Browser");
+        var oauthUrlArea = new JTextArea();
 
         executor.submit(() -> {
+                var authResult = client.withPkce(
+                        uri -> {
+                            oauthUrlArea.setText(uri.toString());
+                            oauthButton.addActionListener(__ -> {
+                                try {
+                                    Desktop.getDesktop().browse(uri);
+                                } catch (Exception e) {
+                                    // Show message
+                                    e.printStackTrace();
+                                }
+                            });
+                        },
+                        pkce -> pkce.scope(Client.Scope.team_lead, Client.Scope.team_read));
 
-            var token = uriAndToken.token();
+                if (authResult instanceof Client.AuthOk ok) {
 
-            try {
-                var tokenSupplier = token.get();
+                    client = ok.client();
+                    client.store(prefs);
 
-                client = Client.load(prefs, t -> t.auth(tokenSupplier));
-                client.store(prefs);
+                    teamsFromClientToPrefs();
+                    teamsFromPrefsToCombo();
 
-                teamsFromClientToPrefs();
-                teamsFromPrefsToCombo();
+                    SwingUtilities.invokeLater(() -> {
 
-                SwingUtilities.invokeLater(() -> {
+                        loginButton.setEnabled(false);
+                        logoutButton.setEnabled(true);
 
-                    loginButton.setEnabled(false);
-                    logoutButton.setEnabled(true);
-
-                    getContentPane().remove(panel);
-                    getContentPane().add(mainPanel);
-                    repaint();
-                });
-
-            } catch (Exception e) {
-                // Some non-success,
-                // maybe timeout or didn't grant
-                System.out.println("Unsuccesful login: " + e.getMessage());
-                backButton.doClick();
-            }
+                        getContentPane().remove(panel);
+                        getContentPane().add(mainPanel);
+                        repaint();
+                    });
+                } else {
+                    // Some non-success,
+                    // maybe timeout or didn't grant
+                    System.out.println("Unsuccesful login: " + authResult);
+                    backButton.doClick();
+                }
         });
 
         boolean canOpenSystemBrowser = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
@@ -569,21 +574,10 @@ public class TeamChooser extends JFrame {
         oauthTextArea.setEnabled(false);
         oauthTextArea.setDisabledTextColor(Color.BLACK);
 
-        var oauthButton = new JButton("Open link in System Browser");
         oauthButton.setFont(mono.deriveFont(20f));
         oauthButton.setEnabled(canOpenSystemBrowser);
         oauthButton.setVisible(canOpenSystemBrowser);
-        oauthButton.addActionListener(__ -> {
-            try {
-                Desktop.getDesktop().browse(uri);
-            } catch (Exception e) {
-                // Show message
-                e.printStackTrace();
-            }
-        });
 
-        var oauthUrlArea = new JTextArea();
-        oauthUrlArea.setText(uri.toString());
         oauthUrlArea.setEditable(false);
         oauthUrlArea.setLineWrap(true);
         oauthUrlArea.setOpaque(false);
