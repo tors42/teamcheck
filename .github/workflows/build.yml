@@ -26,7 +26,12 @@ jobs:
       - name: build
         run: java build/Build.java cross version=${{ inputs.version }}
 
+      - name: checksum
+        run: sha256sum out/*.zip > out/checksums.txt && cat out/checksums.txt
+
       - uses: actions/upload-artifact@v3
         with:
           name: runtimes
-          path: out/*.zip
+          path: |
+            out/*.zip
+            out/checksums.txt
