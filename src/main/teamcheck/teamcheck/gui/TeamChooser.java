@@ -87,7 +87,7 @@ public class TeamChooser extends JFrame {
 
                 var mate = teamCheck.andMate(clientAuth, () -> {
                     // onExpiredToken
-                    clearAuth();
+                    clientAuth.clearAuth(prefs);
                     client = Client.load(prefs);
                     boids.deweaponize();
 
@@ -116,13 +116,6 @@ public class TeamChooser extends JFrame {
         });
     }
 
-    void clearAuth() {
-        prefs.remove("omni_");
-        prefs.remove("pre_");
-        try { Arrays.stream(prefs.keys()).filter(s -> s.startsWith("pre_")).forEach(s -> prefs.remove(s)); } catch (Exception e) {}
-        try { prefs.flush();} catch (Exception e) { }
-    }
-
     private JPanel createMainPanel() {
 
         combo = new JComboBox<>();
@@ -146,7 +139,7 @@ public class TeamChooser extends JFrame {
             });
 
             if (client instanceof ClientAuth clientAuth) {
-                clearAuth();
+                clientAuth.clearAuth(prefs);
                 clientAuth.revokeToken();
 
                 // Reload client with non-auth info
