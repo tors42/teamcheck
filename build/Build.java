@@ -15,7 +15,7 @@ import java.util.stream.*;
 
 public class Build {
 
-    private static final String chariot_version = "0.0.65";
+    private static final String chariot_version = "0.0.66";
 
     private static final String chariotUrl = "https://repo1.maven.org/maven2/io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
 
