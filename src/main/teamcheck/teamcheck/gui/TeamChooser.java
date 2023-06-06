@@ -84,7 +84,6 @@ public class TeamChooser extends JFrame {
                     );
 
             if (client instanceof ClientAuth clientAuth) {
-
                 var mate = teamCheck.andMate(clientAuth, () -> {
                     // onExpiredToken
                     clientAuth.clearAuth(prefs);
@@ -200,7 +199,7 @@ public class TeamChooser extends JFrame {
             }
         });
 
-        if (client instanceof ClientAuth clientAuth) {
+        if (client instanceof ClientAuth) {
             loginButton.setEnabled(false);
             logoutButton.setEnabled(true);
 

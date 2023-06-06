@@ -15,9 +15,11 @@ import java.util.stream.*;
 
 public class Build {
 
-    private static final String chariot_version = "0.0.66";
+    private static final String chariot_version = "0.0.67";
+    static String repo = "https://repo1.maven.org/maven2";
+    static String chariot_path = "io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
 
-    private static final String chariotUrl = "https://repo1.maven.org/maven2/io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
+    static String chariotUrl= "%s/%s".formatted(repo, chariot_path);
 
     public static void main(String... args) throws Exception {
 
@@ -125,8 +127,8 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            //https://download.java.net/java/GA/jdk20/bdc68b4b9cbc4ebcb30745c85038d91d/36/GPL/openjdk-20_linux-x64_bin.tar.gz
-            Version javaVersion = Version.parse("20+36");
+            //https://download.java.net/java/GA/jdk20.0.1/b4887098932d415489976708ad6d1a4b/9/GPL/openjdk-20.0.1_linux-x64_bin.tar.gz
+            Version javaVersion = Version.parse("20.0.1+9");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -134,11 +136,10 @@ public class Build {
                     new Jdk("windows", "x64", "zip")
                     );
             Function<VersionedJdk, URI> toOpenJdkUri = vjdk -> {
-                //https://jdk.java.net/19
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "bdc68b4b9cbc4ebcb30745c85038d91d";
+                String id = "b4887098932d415489976708ad6d1a4b";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 

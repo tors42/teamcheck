@@ -2,10 +2,10 @@ package teamcheck;
 
 import chariot.Client;
 import chariot.ClientAuth;
-import chariot.model.Ack;
 import chariot.model.Fail;
 import chariot.model.Team;
 import chariot.model.User;
+import chariot.model.TeamMember;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -23,6 +23,7 @@ public record CheckUtil(
         t.ifPresentOrElse(team -> {
             teamHandler.accept(team);
             client.teams().usersByTeamId(team.id()).stream()
+                .map(TeamMember::user)
                 .filter(userFilter())
                 .forEach(userHandler());
         },
@@ -50,17 +51,13 @@ public record CheckUtil(
 
     public Mate andMate(ClientAuth client, Runnable onTokenBeenRevoked) {
         return (u) -> {
-
-            var res = client.teams().kickFromTeam(teamId(), u);
-
-            if (res.isPresent()) {
-                return res.get().ok();
-            } else {
-                if (res instanceof Fail<Ack> f && f.message().contains("No such token"))
+            if (client.teams().kickFromTeam(teamId(), u) instanceof Fail<?> f) {
+                if (f.message().contains("No such token")) {
                     try { onTokenBeenRevoked.run(); } catch (Exception ex) {}
-
+                }
                 return false;
             }
+            return true;
         };
     }
 }

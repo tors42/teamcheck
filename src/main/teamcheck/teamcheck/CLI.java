@@ -16,7 +16,7 @@ class CLI {
         CheckUtil.of(
                 args[0],
                 t -> System.out.format("Team: %s%nMembers: %s%n", t.name(), t.nbMembers()),
-                u -> System.out.format("%-16s - %s%n", u.username(), u.url()),
+                u -> System.out.format("%-16s - %s%n", u.name(), u.url()),
                 u -> u.tosViolation()
                 )
             .process(client);

@@ -93,7 +93,7 @@ class Boids extends JComponent {
                               random.nextBoolean() ? 0 : height);
         };
         var velocityTowardsCenter = Vec.of(width/2, height/2).sub(positionOnEdge).normalize().mul(0.5);
-        var name = user.username();
+        var name = user.name();
         var mark = user.tosViolation();
         var color = mark ? Color.red.darker().darker() : Color.green.darker().darker();
         var size = mark ? 20 : 10;
