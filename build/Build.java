@@ -15,7 +15,7 @@ import java.util.stream.*;
 
 public class Build {
 
-    private static final String chariot_version = "0.0.70";
+    private static final String chariot_version = "0.0.73";
     static String repo = "https://repo1.maven.org/maven2";
     static String chariot_path = "io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
 
@@ -103,7 +103,7 @@ public class Build {
 
             run(jlink,
                     //"--add-options", " --enable-preview",
-                    "--compress", "2",
+                    "--compress", "zip-9",
                     "--no-man-pages",
                     "--no-header-files",
                     "--strip-debug",
@@ -127,8 +127,8 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            //https://download.java.net/java/GA/jdk20.0.2/6e380f22cbe7469fa75fb448bd903d8e/9/GPL/openjdk-20.0.2_linux-x64_bin.tar.gz
-            Version javaVersion = Version.parse("20.0.2+9");
+            //https://download.java.net/java/GA/jdk21/fd2272bbf8e04c3dbaee13770090416c/35/GPL/openjdk-21_linux-x64_bin.tar.gz
+            Version javaVersion = Version.parse("21+35");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -139,12 +139,13 @@ public class Build {
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "6e380f22cbe7469fa75fb448bd903d8e";
+                String id = "fd2272bbf8e04c3dbaee13770090416c";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
                 var jdk = vjdk.jdk();
                 URI uri = URI.create(baseUrl + filenameTemplate.formatted(jdk.os(), jdk.arch(), jdk.ext()));
+
                 return uri;
             };
 
@@ -235,7 +236,7 @@ public class Build {
             jmodsPaths.stream()
                 .forEach(jdk -> {
                     run(jlink,
-                            "--compress", "2",
+                            "--compress", "zip-9",
                             "--no-man-pages",
                             "--no-header-files",
                             "--module-path", String.join(File.pathSeparator, jdk.jmods().toString(), moduleOut.toString(), lib.toString()),
