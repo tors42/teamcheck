@@ -51,21 +51,17 @@ class Boids extends JComponent {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                Predicate<Boid> clickHitBoid = b ->
-                    Math.sqrt(Math.pow(b.position().x()               - e.getX(), 2) +
-                              Math.pow(getHeight() - b.position().y() - e.getY(), 2)) < b.size();
+                Predicate<Boid> clickHitBoid = b -> Math.hypot(
+                        b.position().x() - e.getX(),
+                        getHeight() - b.position().y() - e.getY())
+                    < b.size();
 
-                var target = boids.stream()
+                boids.stream()
                     .filter(clickHitBoid)
-                    .findFirst();
-
-                target.ifPresent( b -> {
-                    var kicked = mate.kick(b.name());
-
-                    if (kicked) {
-                        toRemove.add(b);
-                    }
-                });
+                    .findFirst()
+                    .ifPresent(b -> {
+                        if (mate.kick(b.name())) toRemove.add(b);
+                    });
             }
 
             @Override public void mousePressed(MouseEvent e) { }
