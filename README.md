@@ -25,9 +25,9 @@ If you want to build the application yourself,
 make sure to use at least Java 21. A JDK archive can be downloaded and unpacked from https://jdk.java.net
 
     $ java -version
-    openjdk version "21" 2023-09-19
-    OpenJDK Runtime Environment (build 21+35-2513)
-    OpenJDK 64-Bit Server VM (build 21+35-2513, mixed mode, sharing)
+    openjdk version "21.0.1" 2023-10-17
+    OpenJDK Runtime Environment (build 21.0.1+12-29)
+    OpenJDK 64-Bit Server VM (build 21.0.1+12-29, mixed mode, sharing)
 
     $ java build/Build.java
 
