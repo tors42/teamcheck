@@ -5,7 +5,7 @@ import chariot.ClientAuth;
 import chariot.model.Fail;
 import chariot.model.Team;
 import chariot.model.User;
-import chariot.model.TeamMember;
+import chariot.model.TeamMemberFull;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -22,8 +22,8 @@ public record CheckUtil(
 
         t.ifPresentOrElse(team -> {
             teamHandler.accept(team);
-            client.teams().usersByTeamId(team.id()).stream()
-                .map(TeamMember::user)
+            client.teams().usersByTeamIdFull(team.id()).stream()
+                .map(TeamMemberFull::user)
                 .filter(userFilter())
                 .forEach(userHandler());
         },
