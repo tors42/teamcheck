@@ -15,7 +15,7 @@ import java.util.stream.*;
 
 public class Build {
 
-    private static final String chariot_version = "0.0.84";
+    private static final String chariot_version = "0.1.4";
     static String repo = "https://repo1.maven.org/maven2";
 
     static String chariot_path = "io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
@@ -77,8 +77,6 @@ public class Build {
                 """.formatted(module, version, Runtime.version()));
 
         run(javac,
-                //"--enable-preview",
-                //"--source", "20",
                 "--module-source-path", moduleSrc.toString(),
                 "--module", module,
                 "--module-path", lib.toString(),
@@ -128,8 +126,8 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            //https://download.java.net/java/GA/jdk22/830ec9fcccef480bb3e73fb7ecafe059/36/GPL/openjdk-22_linux-x64_bin.tar.gz
-            Version javaVersion = Version.parse("22+36");
+            //https://download.java.net/java/GA/jdk22.0.1/c7ec1332f7bb44aeba2eb341ae18aca4/8/GPL/openjdk-22.0.1_linux-x64_bin.tar.gz
+            Version javaVersion = Version.parse("22.0.1+8");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -140,7 +138,7 @@ public class Build {
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "830ec9fcccef480bb3e73fb7ecafe059";
+                String id = "c7ec1332f7bb44aeba2eb341ae18aca4";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
@@ -186,8 +184,6 @@ public class Build {
 
                    default -> throw new IllegalArgumentException(target.downloadableVersionedJdk().versionedJdk().jdk().os());
                 };
-
-                // :
 
                 try {
                     int exitValue = pb.start().waitFor();
