@@ -126,8 +126,8 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            //https://download.java.net/java/GA/jdk22.0.1/c7ec1332f7bb44aeba2eb341ae18aca4/8/GPL/openjdk-22.0.1_linux-x64_bin.tar.gz
-            Version javaVersion = Version.parse("22.0.1+8");
+            //https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/openjdk-22.0.2_linux-x64_bin.tar.gz
+            Version javaVersion = Version.parse("22.0.2+9");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
@@ -138,7 +138,7 @@ public class Build {
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "c7ec1332f7bb44aeba2eb341ae18aca4";
+                String id = "c9ecb94cd31b495da20a27d4581645e8";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
