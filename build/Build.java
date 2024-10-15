@@ -15,7 +15,7 @@ import java.util.stream.*;
 
 public class Build {
 
-    private static final String chariot_version = "0.1.5";
+    private static final String chariot_version = "0.1.8";
     static String repo = "https://repo1.maven.org/maven2";
 
     static String chariot_path = "io/github/tors42/chariot/%s/chariot-%s.jar".formatted(chariot_version, chariot_version);
@@ -126,19 +126,21 @@ public class Build {
             record DownloadableVersionedJdk(VersionedJdk versionedJdk, URI uri) {}
             record JmodsPath(DownloadableVersionedJdk downloadableVersionedJdk, Path jmods) {}
 
-            //https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/openjdk-22.0.2_linux-x64_bin.tar.gz
-            Version javaVersion = Version.parse("22.0.2+9");
+            //https://download.java.net/java/GA/jdk23.0.1/c28985cbf10d4e648e4004050f8781aa/11/GPL/openjdk-23.0.1_linux-x64_bin.tar.gz
+            Version javaVersion = Version.parse("23.0.1+11");
 
             var jdks = List.of(
                     new Jdk("linux", "x64", "tar.gz"),
+                    new Jdk("linux", "aarch64", "tar.gz"),
                     new Jdk("macos", "x64", "tar.gz"),
+                    new Jdk("macos", "aarch64", "tar.gz"),
                     new Jdk("windows", "x64", "zip")
                     );
             Function<VersionedJdk, URI> toOpenJdkUri = vjdk -> {
                 String javaVersionString = vjdk.toVersionString();
                 String buildString       = vjdk.toBuildString();
 
-                String id = "c9ecb94cd31b495da20a27d4581645e8";
+                String id = "c28985cbf10d4e648e4004050f8781aa";
                 String baseUrl = "https://download.java.net/java/GA/jdk%s/%s/%s/GPL/".formatted(javaVersionString, id, buildString);
                 String filenameTemplate = "openjdk-%s".formatted(javaVersionString).concat("_%s-%s_bin.%s");
 
