@@ -1,14 +1,8 @@
 package teamcheck;
 
-import chariot.Client;
-import chariot.ClientAuth;
-import chariot.model.Fail;
-import chariot.model.Team;
-import chariot.model.User;
-import chariot.model.TeamMemberFull;
+import module chariot;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import module java.base;
 
 public record CheckUtil(
         String teamId,
@@ -34,7 +28,7 @@ public record CheckUtil(
             String teamId,
             Consumer<Team> teamHandler,
             Consumer<User> userHandler) {
-        return of(teamId, teamHandler, userHandler, __ -> true);
+        return of(teamId, teamHandler, userHandler, _ -> true);
     }
 
     static CheckUtil of(

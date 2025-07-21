@@ -1,11 +1,9 @@
 package teamcheck;
 
-import java.awt.GraphicsEnvironment;
-import java.util.prefs.Preferences;
+import module chariot;
 
-import javax.swing.SwingUtilities;
+import module java.desktop;
 
-import chariot.Client;
 import teamcheck.gui.TeamChooser;
 
 class Main {

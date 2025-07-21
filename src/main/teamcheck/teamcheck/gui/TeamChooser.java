@@ -1,19 +1,13 @@
 package teamcheck.gui;
 
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.function.Consumer;
-import java.util.prefs.Preferences;
+import module chariot;
+import module java.base;
+import module java.desktop;
 
-import java.awt.*;
-import javax.swing.*;
+import java.util.List;
+import javax.swing.GroupLayout;
 
 import teamcheck.CheckUtil;
-
-import chariot.Client;
-import chariot.ClientAuth;
-import chariot.model.Team;
 
 public class TeamChooser extends JFrame {
 
@@ -128,7 +122,7 @@ public class TeamChooser extends JFrame {
         logoutButton = new JButton("Logout");
         initComponent(logoutButton);
         logoutButton.setEnabled(false);
-        logoutButton.addActionListener(__ -> {
+        logoutButton.addActionListener(_ -> {
 
             SwingUtilities.invokeLater(() -> {
                 loginButton.setEnabled(true);
@@ -171,7 +165,7 @@ public class TeamChooser extends JFrame {
         combo.setFont(mono.deriveFont(Font.PLAIN));
         combo.setMaximumSize(combo.getPreferredSize());
         combo.setFocusable(true);
-        combo.addItemListener(__ -> {
+        combo.addItemListener(_ -> {
             if (combo.isEnabled()) {
                 if (combo.getSelectedItem() instanceof TeamNameAndId team) {
                     prefs.put("selectedTeamName", team.name());
@@ -191,7 +185,7 @@ public class TeamChooser extends JFrame {
 
         launchButton = new JButton("Launch...");
         initComponent(launchButton);
-        launchButton.addActionListener(e -> {
+        launchButton.addActionListener(_ -> {
             TeamNameAndId team = (TeamNameAndId) combo.getSelectedItem();
             if (team != null) {
                 searchField.setText("");
@@ -215,7 +209,7 @@ public class TeamChooser extends JFrame {
 
         JButton aboutButton = new JButton("About...");
         initComponent(aboutButton);
-        aboutButton.addActionListener(__ -> {
+        aboutButton.addActionListener(_ -> {
             var aboutPanel = createAboutPanel(mainPanel);
 
             SwingUtilities.invokeLater(() -> {
@@ -228,9 +222,9 @@ public class TeamChooser extends JFrame {
 
         JButton exitButton = new JButton("Exit");
         initComponent(exitButton);
-        exitButton.addActionListener(__ -> System.exit(0));
+        exitButton.addActionListener(_ -> System.exit(0));
 
-        loginButton.addActionListener(__ -> {
+        loginButton.addActionListener(_ -> {
             var loginPanel = createLoginPanel(mainPanel);
 
             SwingUtilities.invokeLater(() -> {
@@ -241,7 +235,7 @@ public class TeamChooser extends JFrame {
             });
         });
 
-        searchField.addActionListener(__ -> {
+        searchField.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 var text = searchField.getText();
                 if (text.isEmpty()) {
@@ -429,7 +423,7 @@ public class TeamChooser extends JFrame {
         backButton.setBorderPainted(false);
         buttonPanel.add(backButton);
 
-        backButton.addActionListener(__ -> {
+        backButton.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 var boids = Arrays.stream(panel.getComponents())
                     .filter(c -> c instanceof Boids)
@@ -466,7 +460,7 @@ public class TeamChooser extends JFrame {
         backButton.setBorderPainted(false);
         buttonPanel.add(backButton);
 
-        backButton.addActionListener(__ -> {
+        backButton.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 getContentPane().remove(panel);
                 getContentPane().add(main);
@@ -512,7 +506,7 @@ public class TeamChooser extends JFrame {
                 var authResult = client.withPkce(
                         uri -> {
                             oauthUrlArea.setText(uri.toString());
-                            oauthButton.addActionListener(__ -> {
+                            oauthButton.addActionListener(_ -> {
                                 try {
                                     Desktop.getDesktop().browse(uri);
                                 } catch (Exception e) {
@@ -617,7 +611,7 @@ public class TeamChooser extends JFrame {
         backButton.setBorderPainted(false);
         buttonPanel.add(backButton);
 
-        backButton.addActionListener(__ -> {
+        backButton.addActionListener(_ -> {
             SwingUtilities.invokeLater(() -> {
                 getContentPane().remove(panel);
                 getContentPane().add(main);

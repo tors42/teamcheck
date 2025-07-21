@@ -1,23 +1,15 @@
 package teamcheck.gui;
 
+import module chariot;
+
+import module java.base;
+import module java.desktop;
+
+import java.awt.event.MouseEvent;
+import java.util.List;
+
 import static java.util.function.Predicate.not;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.function.Predicate;
-
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-
-import chariot.model.User;
 import teamcheck.Vec;
 import teamcheck.CheckUtil.Mate;
 

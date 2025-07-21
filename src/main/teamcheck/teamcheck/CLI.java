@@ -1,6 +1,6 @@
 package teamcheck;
 
-import chariot.Client;
+import module chariot;
 
 class CLI {
 
