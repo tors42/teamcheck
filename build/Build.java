@@ -1,10 +1,9 @@
-String chariot_version = "0.1.18";
+String chariot_version = "0.2.0";
 
 void main(String... args) throws Exception {
     URL chariotUrl = URI.create(
             "https://repo1.maven.org/maven2/io/github/tors42/chariot/%1$s/chariot-%1$s.jar"
             .formatted(chariot_version)).toURL();
-    //chariotUrl = URI.create("file:///path/to/git/chariot/out/modules/chariot-0.0.1-SNAPSHOT.jar").toURL();
 
     var props = Arrays.stream(args).filter(s -> s.contains("=")).map(s -> s.split("="))
         .collect(Collectors.toMap(kv -> kv[0], kv -> kv[1]));

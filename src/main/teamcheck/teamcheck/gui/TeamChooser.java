@@ -373,14 +373,13 @@ public class TeamChooser extends JFrame {
 
         String selectedTeamId = prefs.get("selectedTeamId", null);
 
-        if (client instanceof ClientAuth clientAuth) {
-            clientAuth.account().profile().ifPresent( user -> {
-                var teams = clientAuth.teams().byUserId(user.id()).stream()
-                    .filter(team -> team.leaders().stream().anyMatch(leader -> leader.id().equals(user.id())))
-                    .toList();
-                leaderTeams.clear();
-                teams.forEach(t -> leaderTeams.add(new TeamNameAndId(t.name(), t.id())));
-            });
+        if (client instanceof ClientAuth clientAuth &&
+            clientAuth.account().profile() instanceof Some(var user)) {
+            var teams = clientAuth.teams().byUserId(user.id()).stream()
+                .filter(team -> team.leaders().stream().anyMatch(leader -> leader.id().equals(user.id())))
+                .toList();
+            leaderTeams.clear();
+            teams.forEach(t -> leaderTeams.add(new TeamNameAndId(t.name(), t.id())));
         }
 
         try {
@@ -503,43 +502,41 @@ public class TeamChooser extends JFrame {
         var oauthUrlArea = new JTextArea();
 
         executor.submit(() -> {
-                var authResult = client.withPkce(
-                        uri -> {
-                            oauthUrlArea.setText(uri.toString());
-                            oauthButton.addActionListener(_ -> {
-                                try {
-                                    Desktop.getDesktop().browse(uri);
-                                } catch (Exception e) {
-                                    // Show message
-                                    e.printStackTrace();
-                                }
-                            });
-                        },
-                        pkce -> pkce.scope(Client.Scope.team_lead, Client.Scope.team_read));
+            var authResult = client.withPkce(
+                    uri -> {
+                        oauthUrlArea.setText(uri.toString());
+                        oauthButton.addActionListener(_ -> {
+                            try {
+                                Desktop.getDesktop().browse(uri);
+                            } catch (Exception e) {
+                                // Show message
+                                e.printStackTrace();
+                            }
+                        });
+                    },
+                    pkce -> pkce.scope(Client.Scope.team_lead, Client.Scope.team_read));
 
-                if (authResult instanceof Client.AuthOk ok) {
+            if (authResult instanceof Some(var client)) {
+                client.store(prefs);
 
-                    client = ok.client();
-                    client.store(prefs);
+                teamsFromClientToPrefs();
+                teamsFromPrefsToCombo();
 
-                    teamsFromClientToPrefs();
-                    teamsFromPrefsToCombo();
+                SwingUtilities.invokeLater(() -> {
 
-                    SwingUtilities.invokeLater(() -> {
+                    loginButton.setEnabled(false);
+                    logoutButton.setEnabled(true);
 
-                        loginButton.setEnabled(false);
-                        logoutButton.setEnabled(true);
-
-                        getContentPane().remove(panel);
-                        getContentPane().add(mainPanel);
-                        repaint();
-                    });
-                } else {
-                    // Some non-success,
-                    // maybe timeout or didn't grant
-                    System.out.println("Unsuccesful login: " + authResult);
-                    backButton.doClick();
-                }
+                    getContentPane().remove(panel);
+                    getContentPane().add(mainPanel);
+                    repaint();
+                });
+            } else {
+                // Some non-success,
+                // maybe timeout or didn't grant
+                System.out.println("Unsuccesful login: " + authResult);
+                backButton.doClick();
+            }
         });
 
         boolean canOpenSystemBrowser = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
